@@ -6,7 +6,7 @@
 //
 //////////////////////////////////////////
 
-var chain = {};
+var seinfeld = {};
 
 
 
@@ -18,26 +18,26 @@ var chain = {};
 //
 //////////////////////////////////////////
 
-chain.save = function(list) {
-  localStorage["seinfeld.list"] = JSON.stringify(list);
+seinfeld.save = function(list) {
+  localStorage["seinfeld-app.list"] = JSON.stringify(list);
 };
-chain.load = function() {
-  return JSON.parse(localStorage["seinfeld.list"] || "[]")
+seinfeld.load = function() {
+  return JSON.parse(localStorage["seinfeld-app.list"] || "[]")
 };
 
 // a date model API
-chain.today = function() {
+seinfeld.today = function() {
   var now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
 }
-chain.resetDate = function() {
-  return localStorage["seinfeld.start-date"] = chain.today().getTime();
+seinfeld.resetDate = function() {
+  return localStorage["seinfeld-app.start-date"] = seinfeld.today().getTime();
 }
-chain.startDate = function() {
-  return new Date(parseInt(localStorage["seinfeld.start-date"] || chain.resetDate()));
+seinfeld.startDate = function() {
+  return new Date(parseInt(localStorage["seinfeld-app.start-date"] || seinfeld.resetDate()));
 }
-chain.dateAt = function(index) {
-  var date = new Date(chain.startDate());
+seinfeld.dateAt = function(index) {
+  var date = new Date(seinfeld.startDate());
   date.setDate(date.getDate() + index);
   return date;
 }
@@ -52,16 +52,16 @@ chain.dateAt = function(index) {
 //
 //////////////////////////////////////////
 
-chain.controller = function() {
-  var list = chain.load();
+seinfeld.controller = function() {
+  var list = seinfeld.load();
 
   this.isChecked = function(index) {
     return list[index];
   };
   this.check = function(index, status) {
-    if (chain.dateAt(index).getTime() <= chain.today().getTime()) {
+    if (seinfeld.dateAt(index).getTime() <= seinfeld.today().getTime()) {
       list[index] = status;
-      chain.save(list);
+      seinfeld.save(list);
     }
   };
 };
@@ -77,11 +77,12 @@ chain.controller = function() {
 //
 //////////////////////////////////////////
 
-chain.view = function(ctrl) {
-  return m("table", chain.seven(function() {
-    return m("tr", chain.seven(function() {
-      return m("td", [
-        m("input[type=checkbox]")
+seinfeld.view = function(ctrl) {
+  return m("table", seinfeld.seven(function(y) {
+    return m("tr", seinfeld.seven(function(x) {
+      var index = seinfeld.indexAt(x, y)
+      return m("td", seinfeld.highlights(index), [
+        m("input[type=checkbox]", seinfeld.checks(ctrl, index))
       ]);
     }));
   }));
@@ -97,12 +98,32 @@ chain.view = function(ctrl) {
 //
 //////////////////////////////////////////
 
-chain.seven = function(subject) {
+seinfeld.seven = function(subject) {
   var output = [];
   for (var i = 0; i < 7; i++) output.push(subject(i));
   return output;
 };
 
+seinfeld.checks = function(ctrl, index) {
+  return {
+    onclick: function() {
+      ctrl.check(index, this.checked);
+    },
+    checked: ctrl.isChecked(index)
+  }
+}
+
+seinfeld.indexAt = function(x, y) {
+  return y * 7 + x;
+}
+
+seinfeld.highlights = function(index) {
+  return {
+    style: {
+      background: seinfeld.dateAt(index).getTime() == seinfeld.today().getTime() ? "red" : ""
+    }
+  }
+}
 
 
 //////////////////////////////////////////
@@ -113,7 +134,7 @@ chain.seven = function(subject) {
 //
 //////////////////////////////////////////
 
-m.module(document.body, chain);                              // Render the DOM
+m.module(document.body, seinfeld);                                 // Render the DOM
 
 
 
@@ -125,28 +146,28 @@ m.module(document.body, chain);                              // Render the DOM
 //
 //////////////////////////////////////////
 
-// var list = chain.load();                                  // Basic usage
+// var list = seinfeld.load();                                     // Basic usage
 // list[42] = true;
-// chain.save(list);
+// seinfeld.save(list);
 //
-// chain.save([]);                                           // Reset the list
-//
-//
-//
-//                                                           // Date Model API:
-// var today = chain.today()                                 // today at midnight
-//
-// var startDate = chain.startDate();                        // start date is today
-//
-// var isToday = chain.dateAt(3).getTime() == chain.today()  // is three days from now the same as today? Should be false
-//
-// var newStartDate = chain.resetDate();                     // new start date is today
+// seinfeld.save([]);                                              // Reset the list
 //
 //
 //
-//                                                           // Controller API:
-// var ctrl = new chain.controller();
+//                                                                 // Date Model API:
+// var today = seinfeld.today()                                    // today at midnight
 //
-// var isFirstDayChecked = ctrl.isChecked(0);                // is first day checked?
+// var startDate = seinfeld.startDate();                           // start date is today
+//
+// var isToday = seinfeld.dateAt(3).getTime() == seinfeld.today()  // is three days from now the same as today? Should be false
+//
+// var newStartDate = seinfeld.resetDate();                        // new start date is today
+//
+//
+//
+//                                                                 // Controller API:
+// var ctrl = new seinfeld.controller();
+//
+// var isFirstDayChecked = ctrl.isChecked(0);                      // is first day checked?
 //
 // ctrl.check(0, true);
