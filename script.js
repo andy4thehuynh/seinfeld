@@ -52,6 +52,21 @@ chain.dateAt = function(index) {
 //
 //////////////////////////////////////////
 
+chain.controller = function() {
+  var list = chain.load();
+
+  this.isChecked = function(index) {
+    return list[index];
+  };
+  this.check = function(index, status) {
+    if (chain.dateAt(index).getTime() <= chain.today().getTime()) {
+      list[index] = status;
+      chain.save(list);
+    }
+  };
+};
+
+
 
 
 //////////////////////////////////////////
@@ -98,7 +113,7 @@ chain.seven = function(subject) {
 //
 //////////////////////////////////////////
 
-m.module(document.body, { controller: function() {}, view: chain.view });   // render it
+m.module(document.body, chain);                              // Render the DOM
 
 
 
@@ -117,6 +132,7 @@ m.module(document.body, { controller: function() {}, view: chain.view });   // r
 // chain.save([]);                                           // Reset the list
 //
 //
+//
 //                                                           // Date Model API:
 // var today = chain.today()                                 // today at midnight
 //
@@ -125,3 +141,12 @@ m.module(document.body, { controller: function() {}, view: chain.view });   // r
 // var isToday = chain.dateAt(3).getTime() == chain.today()  // is three days from now the same as today? Should be false
 //
 // var newStartDate = chain.resetDate();                     // new start date is today
+//
+//
+//
+//                                                           // Controller API:
+// var ctrl = new chain.controller();
+//
+// var isFirstDayChecked = ctrl.isChecked(0);                // is first day checked?
+//
+// ctrl.check(0, true);
